@@ -1,6 +1,7 @@
-import { Ctx, Hears, Start } from 'nestjs-telegraf';
+import { Ctx, Hears, Start, Update } from 'nestjs-telegraf';
 import { Context, Markup } from 'telegraf';
 
+@Update()
 export class BotUpdate {
   constructor() {}
 
@@ -20,7 +21,7 @@ export class BotUpdate {
     );
   }
 
-  @Hears('Купить тариф')
+  @Hears('💵 Купить тариф')
   async buyRate(@Ctx() ctx: Context) {
     await ctx.reply('Чтобы открыть наш магазин тарифов нажмите кнопку ниже', {
       reply_markup: {

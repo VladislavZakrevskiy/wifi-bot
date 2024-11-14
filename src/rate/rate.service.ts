@@ -11,8 +11,8 @@ export class RateService {
     return this.prisma.rate.create({ data });
   }
 
-  async getAllRates() {
-    return this.prisma.rate.findMany();
+  async getAllRates({ withUsers }: { withUsers: boolean }) {
+    return this.prisma.rate.findMany({ include: { users: withUsers } });
   }
 
   async getRateById(id: string) {

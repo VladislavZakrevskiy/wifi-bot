@@ -21,5 +21,5 @@ model Rate {
   description String
   price       Int
   image_url   String
-  User        User[]
+  users       User[]
 }

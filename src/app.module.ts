@@ -2,10 +2,12 @@ import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { TelegrafModule } from 'nestjs-telegraf';
 import { session } from 'telegraf';
-import { UserService } from './user/user.service';
-import { PrismaService } from './prisma.service';
-import { RateService } from './rate/rate.service';
-import { RouterOSService } from './router/router.service';
+import { ServeStaticModule } from '@nestjs/serve-static';
+import { join } from 'path';
+import { RateModule } from './rate/rate.module';
+import { HttpModule } from '@nestjs/axios';
+import { UserModule } from './user/user.module';
+import { BotModule } from './bot/bot.module';
 
 @Module({
   imports: [
@@ -14,8 +16,15 @@ import { RouterOSService } from './router/router.service';
       middlewares: [session()],
     }),
     ConfigModule.forRoot(),
+    ServeStaticModule.forRoot({
+      rootPath: join(__dirname, '../public'),
+    }),
+    RateModule,
+    UserModule,
+    HttpModule,
+    BotModule,
   ],
 
-  providers: [PrismaService, UserService, RateService, RouterOSService],
+  providers: [],
 })
 export class AppModule {}
