@@ -11,11 +11,11 @@ import { BotModule } from './bot/bot.module';
 
 @Module({
   imports: [
+    ConfigModule.forRoot(),
     TelegrafModule.forRoot({
       token: process.env.TELEGRAM_BOT_TOKEN,
       middlewares: [session()],
     }),
-    ConfigModule.forRoot(),
     ServeStaticModule.forRoot({
       rootPath: join(__dirname, '../public'),
     }),
