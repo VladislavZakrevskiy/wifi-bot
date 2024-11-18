@@ -12,6 +12,7 @@ import { ScheduleModule } from '@nestjs/schedule';
 
 @Module({
   imports: [
+    ConfigModule.forRoot(),
     TelegrafModule.forRoot({
       token: process.env.TELEGRAM_BOT_TOKEN,
       middlewares: [session()],
