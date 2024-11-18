@@ -9,6 +9,8 @@ export class RouterOSService {
   }
 
   async addUser(username: string, password: string, profile: string = 'default'): Promise<string> {
+    if (process.env.MODE === 'dev') return;
+
     const auth = await this.authenticate();
 
     try {
@@ -32,11 +34,13 @@ export class RouterOSService {
         throw new Error('Failed to add user');
       }
     } catch (error) {
-      throw new Error(`Error adding user: ${error.message}`);
+      console.log(error);
     }
   }
 
   async removeUser(username: string): Promise<string> {
+    if (process.env.MODE === 'dev') return;
+
     const auth = await this.authenticate();
 
     try {

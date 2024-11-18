@@ -7,9 +7,10 @@ import { PrismaService } from 'src/prisma.service';
 import { PaymentController } from './payment/payment.controller';
 import { RouterOSService } from 'src/router/router.service';
 import { RateService } from 'src/rate/rate.service';
+import { JwtService } from 'src/user/jwt.service';
 
 @Module({
-  providers: [BotUpdate, PaymentUpdate, UserUpdate, UserService, PrismaService, RouterOSService, RateService],
+  providers: [BotUpdate, PaymentUpdate, UserUpdate, UserService, PrismaService, RouterOSService, RateService, JwtService],
   controllers: [PaymentController],
 })
 export class BotModule {}

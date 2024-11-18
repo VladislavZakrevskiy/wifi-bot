@@ -13,12 +13,18 @@ export class UserUpdate {
     const user = await this.userService.getUserByProps({ tg_id: String(ctx.from.id) });
     const profileImage = await getTelegramImage(ctx, ctx.from.id);
 
-    await ctx.replyWithPhoto(
-      { url: profileImage.toString() },
-      {
-        caption: getProfileText(ctx, user),
+    if (profileImage) {
+      await ctx.replyWithPhoto(
+        { url: profileImage.toString() },
+        {
+          caption: getProfileText(ctx, user),
+          parse_mode: 'HTML',
+        },
+      );
+    } else {
+      await ctx.reply(getProfileText(ctx, user), {
         parse_mode: 'HTML',
-      },
-    );
+      });
+    }
   }
 }

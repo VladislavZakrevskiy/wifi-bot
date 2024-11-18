@@ -1,7 +1,9 @@
-import { Body, Controller, Post } from '@nestjs/common';
+import { Body, Controller, Post, UseGuards } from '@nestjs/common';
 import { Rate } from '@prisma/client';
 import { randomUUID } from 'crypto';
 import { InjectBot } from 'nestjs-telegraf';
+import { JwtAuthGuard } from 'src/core/decorators/JwtAuth.decorator';
+import { PrismaService } from 'src/prisma.service';
 import { Telegraf } from 'telegraf';
 
 interface WebAppData {
@@ -12,7 +14,10 @@ interface WebAppData {
 
 @Controller('tg')
 export class PaymentController {
-  constructor(@InjectBot() private bot: Telegraf) {}
+  constructor(
+    @InjectBot() private bot: Telegraf,
+    private prisma: PrismaService,
+  ) {}
 
   async sendPaymentByStars(webapp_data: WebAppData) {
     const { purchase } = webapp_data;
@@ -44,6 +49,7 @@ export class PaymentController {
     });
   }
 
+  @UseGuards(JwtAuthGuard)
   @Post('/invoice')
   async sendInvoiceToUser(@Body() body: WebAppData) {
     if (body) {
@@ -54,6 +60,16 @@ export class PaymentController {
         case 'tg_native':
           this.sendInvoice(body);
           break;
+      }
+      const user = await this.prisma.user.findUnique({
+        where: { tg_id: String(body.user_id) },
+        include: { refresh_token: true },
+      });
+      if (user.refresh_token) {
+        await this.prisma.user.update({
+          where: { tg_id: String(body.user_id) },
+          data: { ...user, refresh_token: { delete: true } },
+        });
       }
     }
   }

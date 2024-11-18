@@ -5,7 +5,7 @@ import { RouterOSService } from '../../router/router.service';
 import { UserService } from 'src/user/user.service';
 import { randomUUID } from 'crypto';
 import { SuccessfulPayment } from 'src/core/types/SuccessfulPayment';
-import dayjs from 'dayjs';
+import * as dayjs from 'dayjs';
 import { RateService } from 'src/rate/rate.service';
 
 @Update()
@@ -27,13 +27,17 @@ export class PaymentUpdate {
     const rate_id = ctx.message.successful_payment.invoice_payload.split('/separator/')[1];
     const rate = await this.rateService.getRateById(rate_id);
     const password = randomUUID().split('-').join('');
+    console.log(dayjs().add(rate.days, 'days').toDate(), dayjs().toDate());
 
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore
     await this.userService.updateUser({
       ...user,
       rate_id: rate.id,
-      until_date: dayjs().add(rate.days).toDate(),
+      password,
+      until_date: dayjs().add(rate.days, 'days').toDate(),
     });
-    this.routerOSService.addUser(user.username, password);
+    await this.routerOSService.addUser(user.username, password);
 
     await ctx.reply(
       `Успешная покупка!

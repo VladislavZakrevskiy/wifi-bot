@@ -3,23 +3,28 @@ import { RouterOSService } from '../router/router.service';
 import { UserService } from '../user/user.service';
 import { InjectBot } from 'nestjs-telegraf';
 import { Telegraf } from 'telegraf';
-import { getDaysBetweenDates } from 'src/core/helpers/getDaysBetweenDays';
+import { Injectable } from '@nestjs/common';
+import * as dayjs from 'dayjs';
+import { PrismaService } from 'src/prisma.service';
+
+@Injectable()
 export class RateCronService {
   constructor(
     private routerOSService: RouterOSService,
     private userService: UserService,
+    private prisma: PrismaService,
     @InjectBot() private bot: Telegraf,
   ) {}
 
   @Cron(process.env.RATE_CHECK_TIME)
   async check_rate() {
-    const users = await this.userService.getAllUsers();
+    const users = (await this.userService.getAllUsers()).filter(({ rate }) => rate);
 
     for (const user of users) {
-      const until_date = new Date(user.until_date);
-      const now_date = new Date();
-      const days_between = getDaysBetweenDates(until_date, now_date);
-      if (days_between === 1) {
+      const until_date = dayjs(new Date(user.until_date));
+      const now_date = dayjs(new Date());
+      const days_between = until_date.diff(now_date, 'days') + 1;
+      if (days_between === 1 && user.rate.days !== 1) {
         this.bot.telegram.sendMessage(
           user.tg_id,
           `Скоро кончится тариф 🚨🚨🚨
@@ -44,7 +49,13 @@ export class RateCronService {
         );
       }
       if (days_between === 0) {
-        this.bot.telegram.sendMessage(
+        await this.routerOSService.removeUser(user.username);
+        await this.prisma.user.update({
+          where: { id: user.id },
+          data: { username: user.username, until_date: null, password: null, rate: { disconnect: true } },
+        });
+
+        await this.bot.telegram.sendMessage(
           user.tg_id,
           `Закончился тариф 🚨🚨🚨
 Приостановлен доступ к WIFI. Чтобы вернуть доступ, купите новый тариф`,
@@ -54,15 +65,6 @@ export class RateCronService {
             },
           },
         );
-
-        this.routerOSService.removeUser(user.username);
-        this.userService.updateUser({
-          id: user.id,
-          username: user.username,
-          until_date: null,
-          rate_id: null,
-          password: null,
-        });
       }
     }
   }

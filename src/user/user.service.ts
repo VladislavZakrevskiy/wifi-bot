@@ -35,10 +35,16 @@ export class UserService {
 
   async updateUser({ id, ...updateData }: UserUpdateDto) {
     const user = await this.getUserByProps({ id });
-    const currentUser = { password: user.password, username: user.username };
     return await this.prisma.user.update({
       where: { id },
-      data: { ...currentUser, ...updateData },
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-ignore
+      data: {
+        ...user,
+        ...updateData,
+        rate_id: undefined,
+        rate: { connect: { id: updateData.rate_id ? updateData.rate_id : user.rate_id } },
+      },
     });
   }
 }
