@@ -9,7 +9,7 @@ export const getProfileText = (ctx: SessionContext, user: User & { rate: Rate })
   if (user.rate_id) {
     profileText += `<b>Пароль:</b> ${user.password}
 <b>Тариф:</b> ${user.rate.name}
-<b>Оканчивается:</b> ${user.until_date.toISOString().split('T')[0]}
+${user.rate.days >= 36500 ? '' : `<b>Оканчивается:</b> ${user.until_date.toISOString().split('T')[0]}`}
 `;
   } else {
     profileText += `<b>Тариф</b>: Нет`;
