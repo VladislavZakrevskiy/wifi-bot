@@ -1,4 +1,4 @@
-import { Ctx, Hears, Start, Update } from 'nestjs-telegraf';
+import { Command, Ctx, Hears, Start, Update } from 'nestjs-telegraf';
 import { Context, Markup } from 'telegraf';
 import { UserService } from '../user/user.service';
 
@@ -33,7 +33,7 @@ export class BotUpdate {
     );
   }
 
-  @Command(['market'])
+  @Command('market')
   @Hears(['💵 Купить тариф'])
   async buyRate(@Ctx() ctx: Context) {
     await ctx.reply('Чтобы открыть наш магазин тарифов нажмите кнопку ниже', {
@@ -51,8 +51,7 @@ export class BotUpdate {
   }
   @Hears('📃Наша документация')
   async openDocumentation(@Ctx() ctx: Context) {
-    //await ctx.reply('Документация будет позже');
-  
+    await ctx.reply('Документация будет позже');
   }
   @Hears('🔎Инструкция по применению')
   async openInstruction(@Ctx() ctx: Context) {
@@ -61,7 +60,7 @@ export class BotUpdate {
 
   @Command('menu')
   async getMenu(@Ctx() ctx: Context) {
-    const { message_id } = await ctx.reply(
+    await ctx.reply(
       'Меню готово',
       Markup.keyboard([
         [Markup.button.text('💵 Купить тариф')],
@@ -70,21 +69,5 @@ export class BotUpdate {
         .resize()
         .oneTime(),
     );
-  }
-
-  @Hears('💵 Купить тариф')
-  async buyRate(@Ctx() ctx: Context) {
-    await ctx.reply('Чтобы открыть наш магазин тарифов нажмите кнопку ниже', {
-      reply_markup: {
-        inline_keyboard: [
-          [
-            {
-              text: '💵 Купить тариф',
-              web_app: { url: `${process.env.WEB_APP_URL}/ratemarket` },
-            },
-          ],
-        ],
-      },
-    });
   }
 }
