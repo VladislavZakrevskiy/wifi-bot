@@ -4,4 +4,5 @@ export interface CreateRateDto {
   price: number;
   image_url: string;
   stars: number;
+  days: number;
 }

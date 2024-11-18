@@ -5,6 +5,11 @@ import { UserUpdate } from './user/user.update';
 import { UserService } from 'src/user/user.service';
 import { PrismaService } from 'src/prisma.service';
 import { PaymentController } from './payment/payment.controller';
+import { RouterOSService } from 'src/router/router.service';
+import { RateService } from 'src/rate/rate.service';
 
-@Module({ providers: [BotUpdate, PaymentUpdate, UserUpdate, UserService, PrismaService], controllers: [PaymentController] })
+@Module({
+  providers: [BotUpdate, PaymentUpdate, UserUpdate, UserService, PrismaService, RouterOSService, RateService],
+  controllers: [PaymentController],
+})
 export class BotModule {}
