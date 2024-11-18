@@ -1,81 +1,71 @@
-import { HttpService } from '@nestjs/axios';
 import { Injectable } from '@nestjs/common';
-import { AxiosResponse } from 'axios';
-
-interface AuthData {
-  username: string;
-  password: string;
-}
-
-interface RouterOSResponse {
-  message?: string;
-  error?: string;
-}
+import axios from 'axios';
 
 @Injectable()
 export class RouterOSService {
-  private readonly routerosUrl = process.env.ROUTER_URL;
-
-  constructor(private readonly httpService: HttpService) {}
-
-  private async authenticate({ password, username }: AuthData) {
-    const auth = Buffer.from(`${username}:${password}`).toString('base64');
-    return `Basic ${auth}`;
+  private async authenticate() {
+    const auth = Buffer.from(`${process.env.ROUTER_ADMIN_USER}:${process.env.ROUTER_ADMIN_PASSWORD}`).toString('base64');
+    return auth;
   }
 
-  // Добавление пользователя в Hotspot
-  async addHotspotUser(username: string, password: string, profile: string) {
-    const authHeader = await this.authenticate({ password, username });
-    const url = `${this.routerosUrl}/ip/hotspot/user`;
-
-    const userData = {
-      name: username,
-      password: password,
-      profile: profile,
-    };
+  async addUser(username: string, password: string, profile: string = 'default'): Promise<string> {
+    const auth = await this.authenticate();
 
     try {
-      const response = await this.httpService.axiosRef.post<
-        AxiosResponse<RouterOSResponse>
-      >(url, userData, {
-        headers: {
-          Authorization: authHeader,
+      const response = await axios.post(
+        `${process.env.ROUTER_URL}/ip/hotspot/user`,
+        {
+          name: username,
+          password: password,
+          profile: profile,
         },
-      });
-
-      console.log(`User ${username} added successfully`);
-      console.log('Add user', response.data);
-      return response.data;
-    } catch (error) {
-      console.error('Error adding user:', error);
-      throw error;
-    }
-  }
-
-  // вкл/выкл пользователя из HotSpot
-  async enableHotspotUser({ password, username }: AuthData) {
-    const authHeader = await this.authenticate({ password, username });
-    const url = `${this.routerosUrl}/ip/hotspot/user/${username}`;
-
-    try {
-      const response = await this.httpService.axiosRef.patch<
-        AxiosResponse<RouterOSResponse>
-      >(
-        url,
-        { disabled: false },
         {
           headers: {
-            Authorization: authHeader,
+            Authorization: `Basic ${auth}`,
           },
         },
       );
 
-      console.log(`User ${username} enabled successfully`);
-      console.log('Enable user', response.data);
-      return response.data;
+      if (response.status === 200) {
+        return `User ${username} added successfully!`;
+      } else {
+        throw new Error('Failed to add user');
+      }
     } catch (error) {
-      console.error('Error enabling user:', error);
-      throw error;
+      throw new Error(`Error adding user: ${error.message}`);
+    }
+  }
+
+  async removeUser(username: string): Promise<string> {
+    const auth = await this.authenticate();
+
+    try {
+      const usersResponse = await axios.get(`${process.env.ROUTER_URL}/ip/hotspot/user`, {
+        headers: {
+          Authorization: `Basic ${auth}`,
+        },
+      });
+
+      const user = usersResponse.data.find((user: any) => user.name === username);
+      if (!user) {
+        throw new Error('User not found');
+      }
+
+      const userId = user.id;
+
+      const deleteResponse = await axios.delete(`${process.env.ROUTER_URL}/ip/hotspot/user/${userId}`, {
+        headers: {
+          Authorization: `Basic ${auth}`,
+        },
+      });
+
+      if (deleteResponse.status === 200) {
+        return `User ${username} removed successfully!`;
+      } else {
+        throw new Error('Failed to remove user');
+      }
+    } catch (error) {
+      throw new Error(`Error removing user: ${error.message}`);
     }
   }
 }

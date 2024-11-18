@@ -8,6 +8,7 @@ import { RateModule } from './rate/rate.module';
 import { HttpModule } from '@nestjs/axios';
 import { UserModule } from './user/user.module';
 import { BotModule } from './bot/bot.module';
+import { ScheduleModule } from '@nestjs/schedule';
 
 @Module({
   imports: [
@@ -16,6 +17,7 @@ import { BotModule } from './bot/bot.module';
       middlewares: [session()],
     }),
     ConfigModule.forRoot(),
+    ScheduleModule.forRoot(),
     ServeStaticModule.forRoot({
       rootPath: join(__dirname, '../public'),
     }),

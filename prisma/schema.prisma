@@ -8,19 +8,31 @@ datasource db {
 }
 
 model User {
-  id       String  @id @default(uuid()) @db.Uuid
-  username String  @unique
-  password String
-  rate     Rate?   @relation(fields: [rate_id], references: [id])
-  rate_id  String? @db.Uuid
+  id            String        @id @default(uuid()) @db.Uuid
+  tg_id         String        @unique
+  username      String        @unique
+  password      String?
+  rate          Rate?         @relation(fields: [rate_id], references: [id])
+  rate_id       String?       @db.Uuid
+  refresh_token RefreshToken?
+  until_date    DateTime?
 }
 
 model Rate {
   id          String @id @default(uuid()) @db.Uuid
   name        String
   description String
+  days        Int
   price       Int
-  stars Int 
+  stars       Int
   image_url   String
   users       User[]
+}
+
+model RefreshToken {
+  id      String @id @default(uuid()) @db.Uuid
+  user_id String @unique @db.Uuid
+  token   String
+
+  user User @relation(fields: [user_id], references: [id])
 }
